@@ -31,7 +31,7 @@ Vec3f Shader::fragment(const Vec3f& fragPos, const Vec3f& normal, const Vec2f& t
     Vec3f specular = specularColor * spec;
 
     // Combine results
-    Vec3f result = ambient + diffuse + specular;
+    Vec3f result = ambient + diffuse;
     // Clamp the result
     result.x = std::min(result.x, 1.0f);
     result.y = std::min(result.y, 1.0f);

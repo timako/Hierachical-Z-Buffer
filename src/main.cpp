@@ -20,19 +20,20 @@ int main(int argc, char** argv) {
         return 1;
     }
     model.normalizeToUnitCube();
+    
     // Define light
-    Light light(Vec3f(1.0f, 1.0f, 1.0f), Vec3f(1.0f, 1.0f, 1.0f));
+    Light light(Vec3f(-1.0f, -1.0f, -1.0f), Vec3f(1.0f, 1.0f, 1.0f));
 
     // Define shader with material properties
     Shader shader(light,
                   Vec3f(0.1f, 0.1f, 0.1f), // Ambient
                   Vec3f(0.5f, 0.5f, 0.5f), // Diffuse
-                  Vec3f(1.0f, 1.0f, 1.0f), // Specular
-                  32.0f);                  // Shininess
+                  Vec3f(0.7f, 0.7f, 0.7f), // Specular
+                  16.0f);                  // Shininess
 
     // Define camera
     Camera camera(
-        Vec3f(1.5f, 1.5f, 1.5f), // Position
+        Vec3f(1.5f, 2.5f, 3.5f), // Position
         model.center, // Target
         Vec3f(0.0f, 1.0f, 0.0f), // Up vector
         60.0f,                    // FOV

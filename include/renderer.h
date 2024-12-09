@@ -5,6 +5,7 @@
 #include "shader.h"
 #include "camera.h"
 #include "framebuffer.h"
+#include "vector"
 
 class Renderer {
 public:
@@ -20,7 +21,8 @@ public:
 private:
     // Helper functions
     Vec3f multiplyMatrixVec(const float matrix[4][4], const Vec3f& v) const;
-    void drawTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2);
+    void drawTriangle(const std::vector<Vertex>);
+    void drawTriangleWithNormal(const std::vector<Vertex>, Vec3f normal); 
 };
 
 #endif // RENDERER_H

@@ -22,11 +22,12 @@ void Renderer::render(const Model& model) {
 
     // Iterate over all faces
     for (const auto& face : model.faces) {
-        Vertex vertices[3];
+        std::vector<Vertex> vertices; 
+        vertices.resize(3);
         for (int i = 0; i < 3; ++i) {
             const Face::VertexIndices& idx = face.vertices[i];
             vertices[i].position = model.vertices[idx.v];
-            vertices[i].normal = model.normals[idx.vn];
+            vertices[i].normal = model.vNormals[idx.v];
             vertices[i].texcoord = model.texcoords.empty() ? Vec2f() : model.texcoords[idx.vt];
         }
 
@@ -45,22 +46,32 @@ void Renderer::render(const Model& model) {
             }
             // Normalize Device Coordinates (NDC)
             // Transform to Screen Space
-            vertices[i].position.x = (vertices[i].position.x + 1.0f) * 0.5f * width;
-            vertices[i].position.y = (vertices[i].position.y + 1.0f) * 0.5f * height;
             // std::cout << "vertices[" << i << "].position: " << vertices[i].position << std::endl;
             
         }
         // Rasterize triangle
-        drawTriangle(vertices[0], vertices[1], vertices[2]);
+        drawTriangle(vertices);
+        // drawTriangleWithNormal(vertices, normal); 
     }
 }
 
-void Renderer::drawTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2) {
+void Renderer::drawTriangleWithNormal(const std::vector<Vertex> vert, Vec3f fNormal){
+    return; 
+}
+
+void Renderer::drawTriangle(const std::vector<Vertex> vert) {
     // Bounding box for the triangle
-    float minX = std::min({ v0.position.x, v1.position.x, v2.position.x });
-    float minY = std::min({ v0.position.y, v1.position.y, v2.position.y });
-    float maxX = std::max({ v0.position.x, v1.position.x, v2.position.x });
-    float maxY = std::max({ v0.position.y, v1.position.y, v2.position.y });
+    Vertex v[3]; 
+    for(int i = 0; i < 3; i++){
+        v[i] = vert[i];
+        v[i].position.x = (v[i].position.x + 1.0f) * 0.5f * width;
+        v[i].position.y = (v[i].position.y + 1.0f) * 0.5f * height;
+    }
+    
+    float minX = std::min({ v[0].position.x, v[1].position.x, v[2].position.x });
+    float minY = std::min({ v[0].position.y, v[1].position.y, v[2].position.y });
+    float maxX = std::max({ v[0].position.x, v[1].position.x, v[2].position.x });
+    float maxY = std::max({ v[0].position.y, v[1].position.y, v[2].position.y });
 
     // Clamp to framebuffer
     int x0 = std::max(static_cast<int>(std::floor(minX)), 0);
@@ -70,10 +81,10 @@ void Renderer::drawTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2
 
     // Precompute area
 
-    float edge1x = v1.position.x - v0.position.x; 
-    float edge1y = v1.position.y - v0.position.y;
-    float edge2x = v2.position.x - v0.position.x;
-    float edge2y = v2.position.y - v0.position.y;
+    float edge1x = v[1].position.x - v[0].position.x; 
+    float edge1y = v[1].position.y - v[0].position.y;
+    float edge2x = v[2].position.x - v[0].position.x;
+    float edge2y = v[2].position.y - v[0].position.y;
 
     float denom = edge1x * edge2y - edge2x * edge1y;
 
@@ -93,8 +104,8 @@ void Renderer::drawTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2
             float px = x + 0.5f;
             float py = y + 0.5f;
 
-            float vx = x - v0.position.x;
-            float vy = y - v0.position.y;
+            float vx = x - v[0].position.x;
+            float vy = y - v[0].position.y;
 
             // Compute barycentric coordinates
 
@@ -105,9 +116,9 @@ void Renderer::drawTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2
             if (lambda0 < 0.0f || lambda1 < 0.0f || lambda2 < 0.0f)
                 continue;
             
-            float zP = lambda0 * v0.position.z + lambda1 * v1.position.z + lambda2 * v2.position.z;
-            // float w2 = ((v0.position.x - v2.position.x) * (py - v2.position.y) -
-            //             (v0.position.y - v2.position.y) * (px - v2.position.x)) / area;
+            float zP = lambda0 * v[0].position.z + lambda1 * v[1].position.z + lambda2 * v[2].position.z;
+            // float w2 = ((v[0].position.x - v[2].position.x) * (py - v[2].position.y) -
+            //             (v[0].position.y - v[2].position.y) * (px - v[2].position.x)) / area;
 
             // If the point is inside the triangle
             
@@ -116,20 +127,20 @@ void Renderer::drawTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2
 
 
                 // Interpolate normal
-                Vec3f normal = (v0.normal * lambda0 + v1.normal * lambda1 + v2.normal * lambda2).normalized();
+                Vec3f normal = (vert[0].normal * lambda0 + vert[1].normal * lambda1 + vert[2].normal * lambda2).normalized();
 
                 // Interpolate position in view space for shading
-                Vec3f fragPos = (v0.position * lambda0 + v1.position * lambda1 + v2.position * lambda2);
+                Vec3f fragPos = (vert[0].position * lambda0 + vert[1].position * lambda1 + vert[2].position * lambda2);
 
                 // Shading
                 Vec3f color = shader.fragment(fragPos, normal, Vec2f(), camera);
 
                 // Convert color to 0-255
-                // Color finalColor(
-                //     static_cast<uint8_t>(std::min(color.x * 255.0f, 255.0f)),
-                //     static_cast<uint8_t>(std::min(color.y * 255.0f, 255.0f)),
-                //     static_cast<uint8_t>(std::min(color.z * 255.0f, 255.0f))
-                // );
+                Color finalColor(
+                    static_cast<uint8_t>(std::min(color.x * 255.0f, 255.0f)),
+                    static_cast<uint8_t>(std::min(color.y * 255.0f, 255.0f)),
+                    static_cast<uint8_t>(std::min(color.z * 255.0f, 255.0f))
+                );
 
                 Color depthColor(
                     static_cast<uint8_t>(std::min(zP * 150.f, 255.0f)),
@@ -138,7 +149,7 @@ void Renderer::drawTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2
                 );
 
                 // Depth test and set pixel
-                framebuffer.setPixel(x, y, RandColor, zP);
+                framebuffer.setPixel(x, y, finalColor, zP);
             
         }
     }

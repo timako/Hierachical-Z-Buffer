@@ -38,6 +38,7 @@ public:
     std::vector<Vec3f> normals;       // List of normals
     std::vector<Vec2f> texcoords;     // List of texture coordinates
     std::vector<Face> faces;          // List of faces
+    std::vector<Vec3f> vNormals;      // List of vertex normals
     BoundingBox bbox;                 // Bounding box
     Vec3f center; 
 
@@ -51,6 +52,7 @@ public:
     
     // New Method
     void normalizeToUnitCube();
+    void computevNormals();
 };
 
 

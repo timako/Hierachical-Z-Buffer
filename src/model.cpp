@@ -148,49 +148,6 @@ bool Model::loadFromOBJ(const std::string& filename) {
     std::cout << "Total texcoords parsed: " << texcoords.size() << std::endl; // Debug statement
     std::cout << "Total faces parsed: " << faces.size() << std::endl; // Debug statement
 
-
-    // If normals are missing, compute them
-    if (normals.empty()) {
-        std::cerr << "No normals found. Computing normals..." << std::endl;
-        normals.resize(vertices.size(), Vec3f(0.0f, 0.0f, 0.0f));
-        for (const auto& face : faces) {
-            const Vec3f& v0 = vertices[face.vertices[0].v];
-            const Vec3f& v1 = vertices[face.vertices[1].v];
-            const Vec3f& v2 = vertices[face.vertices[2].v];
-
-            Vec3f edge1 = v1 - v0;
-            Vec3f edge2 = v2 - v0;
-            Vec3f faceNormal = edge1.cross(edge2);
-
-            // Check if the face is degenerate
-            if (faceNormal.magnitude() == 0.0f) {
-                std::cerr << "Degenerate face detected. Skipping normal computation for this face." << std::endl;
-                continue;
-            }
-
-            faceNormal.normalize();
-
-            normals[face.vertices[0].v] += faceNormal;
-            normals[face.vertices[1].v] += faceNormal;
-            normals[face.vertices[2].v] += faceNormal;
-        }
-
-        // Normalize all normals, skip zero vectors
-        for (size_t i = 0; i < normals.size(); ++i) {
-            if (normals[i].magnitude() == 0.0f) {
-                std::cerr << "Vertex " << i << " has a zero normal. Assigning default normal." << std::endl;
-                normals[i] = Vec3f(0.0f, 1.0f, 0.0f); // Assigning a default normal
-                continue;
-            }
-            try {
-                normals[i].normalize();
-            } catch (const std::runtime_error& e) {
-                std::cerr << "Error normalizing normal for vertex " << i << ": " << e.what() << std::endl;
-                normals[i] = Vec3f(0.0f, 1.0f, 0.0f); // Assign a default normal
-            }
-        }
-    }
-
     return true;
 }
 
@@ -235,4 +192,69 @@ void Model::normalizeToUnitCube() {
     }
     computeBoundingBox();
     center = (bbox.min + bbox.max) * 0.5f;
+    computevNormals(); 
+    // for(int i = 0; i < normals.size(); i++){
+    //     std::cout << "normal: " << normals[i] << std::endl;
+    // }
+}
+
+void Model::computevNormals(){
+    vNormals.resize(vertices.size(), Vec3f(0.0f, 0.0f, 0.0f));
+    std::vector<int> count(vertices.size(), 0);
+    if (normals.empty()) {
+        std::cerr << "No normals found. Computing normals..." << std::endl;
+        vNormals.resize(vertices.size(), Vec3f(0.0f, 0.0f, 0.0f));
+        
+        for (const auto& face : faces) {
+            const Vec3f& v0 = vertices[face.vertices[0].v];
+            const Vec3f& v1 = vertices[face.vertices[1].v];
+            const Vec3f& v2 = vertices[face.vertices[2].v];
+            Vec3f edge1 = v1 - v0;
+            Vec3f edge2 = v2 - v0;
+            Vec3f faceNormal = edge1.cross(edge2);
+            if (faceNormal.magnitude() == 0.0f) {
+                std::cerr << "Degenerate face detected. Skipping normal computation for this face." << std::endl;
+                continue;
+            }
+            for(int i = 0; i < 3; i++){
+                vNormals[face.vertices[i].v] += faceNormal;
+                count[face.vertices[i].v]++;
+            }
+        }
+        for(size_t i = 0; i < vNormals.size(); i++){
+            if(count[i] > 0){
+                vNormals[i] /= count[i];
+            }
+        }
+
+        for (size_t i = 0; i < vNormals.size(); i++) {
+            if(vNormals[i].magnitude() == 0.0f){
+                std::cerr << "Vertex " << i << " has a zero normal. Assigning default normal." << std::endl;
+                vNormals[i] = Vec3f(0.0f, 1.0f, 0.0f); // Assigning a default normal
+                continue;
+            }
+            try
+            {
+                vNormals[i].normalize();
+            }
+            catch (const std::runtime_error& e) {
+                std::cerr << "Error normalizing normal for vertex " << i << ": " << e.what() << std::endl;
+                vNormals[i] = Vec3f(0.0f, 1.0f, 0.0f); // Assign a default normal
+            }
+        }
+    }
+    else{
+        for (const auto& face : faces) {
+            for(int i = 0; i < 3; i++){
+                vNormals[face.vertices[i].v] += normals[face.vertices[i].vn];
+                count[face.vertices[i].v]++;
+            }
+        }
+        for(size_t i = 0; i < vNormals.size(); i++){
+            if(count[i] > 0){
+                vNormals[i] /= count[i];
+                vNormals[i].normalize();
+            }
+        }
+    }
 }
