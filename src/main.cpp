@@ -20,7 +20,14 @@ int main(int argc, char** argv) {
         return 1;
     }
     model.normalizeToUnitCube();
-    
+
+    Model model2; 
+    if (!model2.loadFromOBJ("../bunny.obj")) {
+        std::cerr << "Failed to load OBJ file." << std::endl;
+        return 1;
+    }
+    model2.normalizeToUnitCube();
+
     // Define light
     Light light(Vec3f(-1.0f, -1.0f, -1.0f), Vec3f(1.0f, 1.0f, 1.0f));
 
@@ -48,7 +55,9 @@ int main(int argc, char** argv) {
     Renderer renderer(width, height, shader, camera);
 
     // Render the model
+    renderer.framebuffer.clear(Color(0.1, 0.1, 0.1));
     renderer.render(model);
+    renderer.render(model2);
 
     // Save the framebuffer to an image
     renderer.framebuffer.saveToBMP(outputImage);

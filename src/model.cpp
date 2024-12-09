@@ -170,8 +170,6 @@ void Model::computeBoundingBox() {
     center = (bbox.min + bbox.max) * 0.5f;
 }
 
-
-
 void Model::normalizeToUnitCube() {
     computeBoundingBox();
     center = (bbox.min + bbox.max) * 0.5f;

@@ -9,7 +9,7 @@ Renderer::Renderer(int w, int h, const Shader& shd, const Camera& cam)
 
 void Renderer::render(const Model& model) {
     // Clear framebuffer
-    framebuffer.clear(Color(0.1, 0.1, 0.1));
+    // framebuffer.clear(Color(0.1, 0.1, 0.1));
 
     // Get View and Projection matrices
     Mat4x4 viewMatrix;
