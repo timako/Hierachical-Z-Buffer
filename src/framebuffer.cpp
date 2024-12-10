@@ -5,23 +5,11 @@
 
 Framebuffer::Framebuffer(int w, int h)
     : width(w), height(h),
-      colorBuffer(w * h, Color(0, 0, 0)),
-      depthBuffer(w * h, -std::numeric_limits<float>::infinity()) {}
+      colorBuffer(w * h, Color(0, 0, 0))
+      {}
 
 void Framebuffer::clear(const Color& clearColor) {
     std::fill(colorBuffer.begin(), colorBuffer.end(), clearColor);
-    std::fill(depthBuffer.begin(), depthBuffer.end(), -std::numeric_limits<float>::infinity());
-}
-
-void Framebuffer::setPixel(int x, int y, const Color& color, float depth) {
-    if (x < 0 || x >= width || y < 0 || y >= height)
-        return;
-
-    int index = y * width + x;
-    if (depth > depthBuffer[index]) {
-        depthBuffer[index] = depth;
-        colorBuffer[index] = color;
-    }
 }
 
 // Simple BMP writer
@@ -87,4 +75,24 @@ void Framebuffer::saveToBMP(const std::string& filename) const {
 
     ofs.close();
     std::cout << "Image saved to " << filename << std::endl;
+}
+
+SimpleZbuffer::SimpleZbuffer(int w, int h)
+    : Framebuffer(w, h),
+      depthBuffer(w * h, -std::numeric_limits<float>::infinity()) {}
+
+void SimpleZbuffer::clear(const Color& clearColor) {
+    std::fill(colorBuffer.begin(), colorBuffer.end(), clearColor);
+    std::fill(depthBuffer.begin(), depthBuffer.end(), -std::numeric_limits<float>::infinity());
+}
+
+void SimpleZbuffer::setPixel(int x, int y, const Color& color, float depth) {
+    if (x < 0 || x >= width || y < 0 || y >= height)
+        return;
+
+    int index = y * width + x;
+    if (depth > depthBuffer[index]) {
+        depthBuffer[index] = depth;
+        colorBuffer[index] = color;
+    }
 }

@@ -5,7 +5,11 @@
 
 // Constructor
 Renderer::Renderer(int w, int h, const Shader& shd, const Camera& cam)
-    : width(w), height(h), framebuffer(w, h), shader(shd), camera(cam) {}
+    : width(w), height(h), shader(shd), camera(cam) {
+        if(zBufferMethod == ZBufferMethod::Simple){
+            framebuffer = new SimpleZbuffer(w, h);
+        }
+    }
 
 void Renderer::render(const Model& model) {
     // Clear framebuffer
@@ -149,7 +153,7 @@ void Renderer::drawTriangle(const std::vector<Vertex> vert) {
                 );
 
                 // Depth test and set pixel
-                framebuffer.setPixel(x, y, finalColor, zP);
+                framebuffer->setPixel(x, y, finalColor, zP);
             
         }
     }

@@ -11,9 +11,16 @@ class Renderer {
 public:
     int width;
     int height;
-    Framebuffer framebuffer;
+    Framebuffer *framebuffer;
     Shader shader;
     Camera camera;
+    enum ZBufferMethod {
+        Simple,
+        ScanLine, 
+        SimpleHierarchical,
+        OctreeHierarchical
+    };
+    ZBufferMethod zBufferMethod = ZBufferMethod::Simple; 
 
     Renderer(int w, int h, const Shader& shd, const Camera& cam);
 

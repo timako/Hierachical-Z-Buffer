@@ -55,12 +55,12 @@ int main(int argc, char** argv) {
     Renderer renderer(width, height, shader, camera);
 
     // Render the model
-    renderer.framebuffer.clear(Color(0.1, 0.1, 0.1));
+    renderer.framebuffer->clear(Color(0.1, 0.1, 0.1));
     renderer.render(model);
     renderer.render(model2);
 
     // Save the framebuffer to an image
-    renderer.framebuffer.saveToBMP(outputImage);
+    renderer.framebuffer->saveToBMP(outputImage);
 
     std::cout << "Rendering complete. Image saved to " << outputImage << std::endl;
 
