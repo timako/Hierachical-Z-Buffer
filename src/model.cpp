@@ -190,26 +190,29 @@ void Model::normalizeToUnitCube() {
     }
     computeBoundingBox();
     center = (bbox.min + bbox.max) * 0.5f;
-    computevNormals(); 
+    computeNormals(); 
     // for(int i = 0; i < normals.size(); i++){
     //     std::cout << "normal: " << normals[i] << std::endl;
     // }
 }
 
-void Model::computevNormals(){
+void Model::computeNormals(){
     vNormals.resize(vertices.size(), Vec3f(0.0f, 0.0f, 0.0f));
     std::vector<int> count(vertices.size(), 0);
     if (normals.empty()) {
-        std::cerr << "No normals found. Computing normals..." << std::endl;
+        std::cerr << "No normals found. Computing vertex normals..." << std::endl;
         vNormals.resize(vertices.size(), Vec3f(0.0f, 0.0f, 0.0f));
-        
-        for (const auto& face : faces) {
+        fNormals.resize(faces.size(), Vec3f(0.0f, 0.0f, 0.0f));
+        uint faceSize = faces.size();
+        for (uint j = 0; j< faceSize; j++) {
+            Face face = faces[j];
             const Vec3f& v0 = vertices[face.vertices[0].v];
             const Vec3f& v1 = vertices[face.vertices[1].v];
             const Vec3f& v2 = vertices[face.vertices[2].v];
             Vec3f edge1 = v1 - v0;
             Vec3f edge2 = v2 - v0;
             Vec3f faceNormal = edge1.cross(edge2);
+            fNormals[j] = faceNormal;
             if (faceNormal.magnitude() == 0.0f) {
                 std::cerr << "Degenerate face detected. Skipping normal computation for this face." << std::endl;
                 continue;
@@ -242,6 +245,18 @@ void Model::computevNormals(){
         }
     }
     else{
+        uint faceSize = faces.size();
+        for (uint j = 0; j< faceSize; j++) {
+            Face face = faces[j];
+            const Vec3f& v0 = vertices[face.vertices[0].v];
+            const Vec3f& v1 = vertices[face.vertices[1].v];
+            const Vec3f& v2 = vertices[face.vertices[2].v];
+            Vec3f edge1 = v1 - v0;
+            Vec3f edge2 = v2 - v0;
+            Vec3f faceNormal = edge1.cross(edge2);
+            fNormals[j] = faceNormal;
+        }
+
         for (const auto& face : faces) {
             for(int i = 0; i < 3; i++){
                 vNormals[face.vertices[i].v] += normals[face.vertices[i].vn];

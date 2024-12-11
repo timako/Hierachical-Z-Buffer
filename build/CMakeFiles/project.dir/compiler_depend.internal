@@ -222,6 +222,25 @@ CMakeFiles/project.dir/src/ScanLineZBuffer.cpp.o
  /home/timako/Code/Hierachical-Z-Buffer/include/vector.h
  /usr/include/c++/12/array
  /usr/include/c++/12/compare
+ /home/timako/Code/Hierachical-Z-Buffer/include/Timer.h
+ /usr/include/c++/12/chrono
+ /usr/include/c++/12/bits/chrono.h
+ /usr/include/c++/12/ratio
+ /usr/include/c++/12/ctime
+ /usr/include/c++/12/bits/parse_numbers.h
+ /usr/include/c++/12/thread
+ /usr/include/c++/12/bits/std_thread.h
+ /usr/include/c++/12/tuple
+ /usr/include/c++/12/bits/uses_allocator.h
+ /usr/include/c++/12/bits/unique_ptr.h
+ /usr/include/c++/12/bits/this_thread_sleep.h
+ /home/timako/Code/Hierachical-Z-Buffer/include/model.h
+ /home/timako/Code/Hierachical-Z-Buffer/include/renderer.h
+ /home/timako/Code/Hierachical-Z-Buffer/include/shader.h
+ /home/timako/Code/Hierachical-Z-Buffer/include/light.h
+ /home/timako/Code/Hierachical-Z-Buffer/include/camera.h
+ /home/timako/Code/Hierachical-Z-Buffer/include/matrix.h
+ /home/timako/Code/Hierachical-Z-Buffer/include/ScanLineZBuffer.h
 
 CMakeFiles/project.dir/src/camera.cpp.o
  /home/timako/Code/Hierachical-Z-Buffer/src/camera.cpp
@@ -1107,6 +1126,7 @@ CMakeFiles/project.dir/src/main.cpp.o
  /home/timako/Code/Hierachical-Z-Buffer/include/model.h
  /home/timako/Code/Hierachical-Z-Buffer/include/shader.h
  /home/timako/Code/Hierachical-Z-Buffer/include/framebuffer.h
+ /home/timako/Code/Hierachical-Z-Buffer/include/ScanLineZBuffer.h
 
 CMakeFiles/project.dir/src/matrix.cpp.o
  /home/timako/Code/Hierachical-Z-Buffer/src/matrix.cpp
@@ -1795,6 +1815,7 @@ CMakeFiles/project.dir/src/renderer.cpp.o
  /home/timako/Code/Hierachical-Z-Buffer/include/camera.h
  /home/timako/Code/Hierachical-Z-Buffer/include/matrix.h
  /home/timako/Code/Hierachical-Z-Buffer/include/framebuffer.h
+ /home/timako/Code/Hierachical-Z-Buffer/include/ScanLineZBuffer.h
  /usr/include/c++/12/algorithm
  /usr/include/c++/12/bits/stl_algo.h
  /usr/include/c++/12/bits/algorithmfwd.h

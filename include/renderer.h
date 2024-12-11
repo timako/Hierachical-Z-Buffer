@@ -5,6 +5,7 @@
 #include "shader.h"
 #include "camera.h"
 #include "framebuffer.h"
+#include "ScanLineZBuffer.h"
 #include "vector"
 
 class Renderer {

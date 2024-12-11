@@ -9,6 +9,10 @@ Renderer::Renderer(int w, int h, const Shader& shd, const Camera& cam)
         if(zBufferMethod == ZBufferMethod::Simple){
             framebuffer = new SimpleZbuffer(w, h);
         }
+        else if (zBufferMethod == ZBufferMethod::ScanLine){
+            framebuffer = new ScanLineZBuffer(w, h);
+            framebuffer->pRenderer = this;
+        }
     }
 
 void Renderer::render(const Model& model) {
@@ -16,47 +20,50 @@ void Renderer::render(const Model& model) {
     // framebuffer.clear(Color(0.1, 0.1, 0.1));
 
     // Get View and Projection matrices
-    Mat4x4 viewMatrix;
-    camera.getViewMatrix(viewMatrix);
+    if(this->zBufferMethod == ZBufferMethod::Simple){
+        Mat4x4 viewMatrix;
+        camera.getViewMatrix(viewMatrix);
 
-    Mat4x4 projectionMatrix;
-    camera.getProjectionMatrix(projectionMatrix);
+        Mat4x4 projectionMatrix;
+        camera.getProjectionMatrix(projectionMatrix);
 
-    std::cout << "projmat" << projectionMatrix; 
+        std::cout << "projmat" << projectionMatrix; 
 
-    // Iterate over all faces
-    for (const auto& face : model.faces) {
-        std::vector<Vertex> vertices; 
-        vertices.resize(3);
-        for (int i = 0; i < 3; ++i) {
-            const Face::VertexIndices& idx = face.vertices[i];
-            vertices[i].position = model.vertices[idx.v];
-            vertices[i].normal = model.vNormals[idx.v];
-            vertices[i].texcoord = model.texcoords.empty() ? Vec2f() : model.texcoords[idx.vt];
-        }
-
-        // Transform vertices
-        for (int i = 0; i < 3; ++i) {
-            
-            Vec4f pos(vertices[i].position.x, vertices[i].position.y, vertices[i].position.z, 1.0f);
-            // World to View
-            pos = viewMatrix * pos; 
-            // View to Clip
-            pos = projectionMatrix * pos; 
-            if (pos.w != 0.0f) {
-                vertices[i].position = Vec3f(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w);
-            } else {
-                std::cerr << "Warning: pos.w is 0.0f when transforming." << std::endl;;
+        // Iterate over all faces
+        for (const auto& face : model.faces) {
+            std::vector<Vertex> vertices; 
+            vertices.resize(3);
+            for (int i = 0; i < 3; ++i) {
+                const Face::VertexIndices& idx = face.vertices[i];
+                vertices[i].position = model.vertices[idx.v];
+                vertices[i].normal = model.vNormals[idx.v];
+                vertices[i].texcoord = model.texcoords.empty() ? Vec2f() : model.texcoords[idx.vt];
             }
-            // Normalize Device Coordinates (NDC)
-            // Transform to Screen Space
-            // std::cout << "vertices[" << i << "].position: " << vertices[i].position << std::endl;
-            
+
+            // Transform vertices
+            for (int i = 0; i < 3; ++i) {
+                
+                Vec4f pos(vertices[i].position.x, vertices[i].position.y, vertices[i].position.z, 1.0f);
+                // World to View
+                pos = viewMatrix * pos; 
+                // View to Clip
+                pos = projectionMatrix * pos; 
+                if (pos.w != 0.0f) {
+                    vertices[i].position = Vec3f(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w);
+                } else {
+                    std::cerr << "Warning: pos.w is 0.0f when transforming." << std::endl;;
+                }
+                // Normalize Device Coordinates (NDC)
+                // Transform to Screen Space
+                // std::cout << "vertices[" << i << "].position: " << vertices[i].position << std::endl;
+                
+            }
+            // Rasterize triangle
+            drawTriangle(vertices);
+            // drawTriangleWithNormal(vertices, normal); 
         }
-        // Rasterize triangle
-        drawTriangle(vertices);
-        // drawTriangleWithNormal(vertices, normal); 
     }
+    
 }
 
 void Renderer::drawTriangleWithNormal(const std::vector<Vertex> vert, Vec3f fNormal){
@@ -126,34 +133,32 @@ void Renderer::drawTriangle(const std::vector<Vertex> vert) {
 
             // If the point is inside the triangle
             
-                // Perspective-correct interpolation
+            // Perspective-correct interpolation
 
+            // Interpolate normal
+            Vec3f normal = (vert[0].normal * lambda0 + vert[1].normal * lambda1 + vert[2].normal * lambda2).normalized();
 
+            // Interpolate position in view space for shading
+            Vec3f fragPos = (vert[0].position * lambda0 + vert[1].position * lambda1 + vert[2].position * lambda2);
 
-                // Interpolate normal
-                Vec3f normal = (vert[0].normal * lambda0 + vert[1].normal * lambda1 + vert[2].normal * lambda2).normalized();
+            // Shading
+            Vec3f color = shader.fragment(fragPos, normal, Vec2f(), camera);
 
-                // Interpolate position in view space for shading
-                Vec3f fragPos = (vert[0].position * lambda0 + vert[1].position * lambda1 + vert[2].position * lambda2);
+            // Convert color to 0-255
+            Color finalColor(
+                static_cast<uint8_t>(std::min(color.x * 255.0f, 255.0f)),
+                static_cast<uint8_t>(std::min(color.y * 255.0f, 255.0f)),
+                static_cast<uint8_t>(std::min(color.z * 255.0f, 255.0f))
+            );
 
-                // Shading
-                Vec3f color = shader.fragment(fragPos, normal, Vec2f(), camera);
+            Color depthColor(
+                static_cast<uint8_t>(std::min(zP * 150.f, 255.0f)),
+                static_cast<uint8_t>(std::min(zP * 150.f, 255.0f)),
+                static_cast<uint8_t>(std::min(zP * 150.f, 255.0f))
+            );
 
-                // Convert color to 0-255
-                Color finalColor(
-                    static_cast<uint8_t>(std::min(color.x * 255.0f, 255.0f)),
-                    static_cast<uint8_t>(std::min(color.y * 255.0f, 255.0f)),
-                    static_cast<uint8_t>(std::min(color.z * 255.0f, 255.0f))
-                );
-
-                Color depthColor(
-                    static_cast<uint8_t>(std::min(zP * 150.f, 255.0f)),
-                    static_cast<uint8_t>(std::min(zP * 150.f, 255.0f)),
-                    static_cast<uint8_t>(std::min(zP * 150.f, 255.0f))
-                );
-
-                // Depth test and set pixel
-                framebuffer->setPixel(x, y, finalColor, zP);
+            // Depth test and set pixel
+            framebuffer->setPixel(x, y, finalColor, zP);
             
         }
     }

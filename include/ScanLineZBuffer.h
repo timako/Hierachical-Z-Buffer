@@ -33,8 +33,11 @@ struct ActivatedEdgef
 	int id; 
 };
 
+class Renderer; 
+
 class ScanLineZBuffer : public Framebuffer
 {
+public:
     ScanLineZBuffer() = delete;
 	ScanLineZBuffer(int w, int h);
 	~ScanLineZBuffer() = default;
@@ -57,5 +60,15 @@ class ScanLineZBuffer : public Framebuffer
     void clear(const Color& clearColor = Color(0, 0, 0));
     virtual void setPixel(int x, int y, const Color& color, float depth);
 }; 
+
+
+
+inline bool isEqualf(float a, float b)
+{
+	const float eps = 1e-6;
+	if (fabs(a - b) < eps)
+		return true;
+	return false;
+}
 
 #endif // SCANLINEZBUFFER_H

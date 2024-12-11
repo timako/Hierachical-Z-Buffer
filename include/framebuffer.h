@@ -13,8 +13,11 @@ struct Color {
         : r(red), g(green), b(blue) {}
 };
 
+class Renderer; 
+
 class Framebuffer {
 public:
+    Renderer *pRenderer;
     int width;
     int height;
     std::vector<Color> colorBuffer;
