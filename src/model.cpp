@@ -198,11 +198,10 @@ void Model::normalizeToUnitCube() {
 
 void Model::computeNormals(){
     vNormals.resize(vertices.size(), Vec3f(0.0f, 0.0f, 0.0f));
+    fNormals.resize(faces.size(), Vec3f(0.0f, 0.0f, 0.0f));
     std::vector<int> count(vertices.size(), 0);
     if (normals.empty()) {
         std::cerr << "No normals found. Computing vertex normals..." << std::endl;
-        vNormals.resize(vertices.size(), Vec3f(0.0f, 0.0f, 0.0f));
-        fNormals.resize(faces.size(), Vec3f(0.0f, 0.0f, 0.0f));
         uint faceSize = faces.size();
         for (uint j = 0; j< faceSize; j++) {
             Face face = faces[j];

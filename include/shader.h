@@ -4,12 +4,7 @@
 #include "vector.h"
 #include "light.h"
 #include "camera.h"
-
-struct Vertex {
-    Vec3f position;
-    Vec3f normal;
-    Vec2f texcoord;
-};
+#include "objtype.h"
 
 class Shader {
 public:

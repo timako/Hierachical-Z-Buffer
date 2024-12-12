@@ -3,35 +3,35 @@
 
 #include "framebuffer.h"
 #include "model.h"
+#include "objtype.h"
 
 // with reference to ppt 11 of CG course, JieQing Feng Prof. in ZJU. 
-struct ClassifiedPolygonf
+
+
+struct Edgef
 {
+	Vec3f start, cur, end; //start.y < end.y
+	float gradientDxDy, gradientDzDy;
+	Vec3f rgbStart, rgbCur, rgbEnd;
+	Vec3f gradientdRGBdy; 
+	bool isPaired; 
+
+	uint edgeId;
+	uint polygonId;
+
+	Edgef(const Vertex& v0, const Vertex& v1, uint eid, uint pid);
+	void setCurPos(int current_Y);
+}; 
+
+
+struct Polygonf
+{
+	std::vector<Vertex> vertices;
 	float a, b, c, d; 
-	int id; 
+	int polygonId; 
 	int dy; 
-	Color color; 
 };
 
-struct ClassifiedEdgef
-{
-	float x; 
-	float dx; 
-	int dy; 
-	int id; 
-};
-
-
-struct ActivatedEdgef
-{
-	float xl, xr; 
-	float dxl, dxr; 
-	float dyl, dyr; 
-	float zl; 
-	float dzx; 
-	float dzy; 
-	int id; 
-};
 
 class Renderer; 
 
@@ -44,20 +44,18 @@ public:
 	void clear();
 	void buildTable(const Model& model);
 	void actScan(); 
-	std::vector<std::vector<int>> idTable;
+
+	int curFaceOffset = 0;
+	int edgeIdOffset = 0;
+	
 	std::vector<float> zBufferLine;
 
-	std::vector<ClassifiedEdgef> relatedEdge; 
-	std::vector<std::vector<ClassifiedPolygonf> > classifiedPolygonTable;
-	std::vector<std::vector<ClassifiedEdgef> > classifiedEdgeTable;
-	std::vector<ClassifiedPolygonf> activePolygonTable;
-	std::vector<ActivatedEdgef> activeEdgeTable;	
-	
-	void addActiveEdgeFromActivePolygon(int y, ClassifiedPolygonf& activePolygon); 
-	bool findReplaceEdgeFromActivePolygon(int y, ActivatedEdgef& activeEdge);
-	
+	std::vector<Edgef> edgeTable;
+	std::vector<Edgef> activeEdgeTable;
+	std::vector<std::vector<int>> activeEdgeIdTable;   // enter by line
+	std::vector<std::vector<int>> deactiveEdgeIdTable; // escape by line
 
-    void clear(const Color& clearColor = Color(0, 0, 0));
+
     virtual void setPixel(int x, int y, const Color& color, float depth);
 }; 
 
