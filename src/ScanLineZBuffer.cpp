@@ -190,7 +190,7 @@ void ScanLineZBuffer::actScan(const Model& model){
 			assert(edge0.cur.x <= edge1.cur.x);
 
 			uint x0 = std::max(0, int(std::ceil(edge0.cur.x)));
-			uint x1 = std::min(width - 1, int(std::floor(edge1.cur.x)));
+			uint x1 = std::min(width - 1, int(std::ceil(edge1.cur.x)));
 			if(x0 >= x1){
 				continue;
 			}
@@ -202,7 +202,7 @@ void ScanLineZBuffer::actScan(const Model& model){
 			Vec3f gradientdRGBdx = (rgbEnd - rgbStart) / (edge1.cur.x - edge0.cur.x);
 			zStart += gradientDzDx * (float(x0) - edge0.cur.x);
 			rgbStart += gradientdRGBdx * (float(x0) - edge0.cur.x);
-			for(uint x = x0; x < x1; x++){
+			for(uint x = x0; x <= x1; x++){
 				if(zBufferLine[x] < zStart){
 					zBufferLine[x] = zStart;
 					Vec3f rgb = rgbStart;
@@ -230,7 +230,6 @@ void ScanLineZBuffer::actScan(const Model& model){
 				zStart += gradientDzDx;
 				rgbStart += gradientdRGBdx;
 			}
-			
 		}
 		for(auto& edge : activeEdgeTable){
 			edge.setCurPos(h_iter + 1);
