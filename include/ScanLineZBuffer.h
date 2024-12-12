@@ -43,7 +43,7 @@ public:
 	~ScanLineZBuffer() = default;
 	void clear();
 	void buildTable(const Model& model);
-	void actScan(); 
+	void actScan(const Model& model); 
 
 	int curFaceOffset = 0;
 	int edgeIdOffset = 0;

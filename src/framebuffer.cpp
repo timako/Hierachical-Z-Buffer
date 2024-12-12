@@ -95,4 +95,7 @@ void SimpleZbuffer::setPixel(int x, int y, const Color& color, float depth) {
         depthBuffer[index] = depth;
         colorBuffer[index] = color;
     }
+    if(y == 733){
+        colorBuffer[index] = Color(0, 255, 0);
+    }
 }

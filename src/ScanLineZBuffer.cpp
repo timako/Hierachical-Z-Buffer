@@ -86,25 +86,34 @@ void ScanLineZBuffer::buildTable(const Model& model){
 			auto v1 = vertices[(i + 1) % 3];
 			float y0f = v0.position.y;
 			float y1f = v1.position.y;
+
 			if(y0f > y1f){
 				std::swap(v0, v1);
+				y0f = v0.position.y;
+				y1f = v1.position.y;
+
 			}
+			
 			if(isEqualf(y0f, y1f)){
+
 				continue;
 			}
-			if(std::ceil(y0f) == std::floor(y1f)){
+			if(std::ceil(y0f) == std::ceil(y1f)){
 				continue; 
 			}
 			if(y0f >= float(height - 1) || y1f < 0.f){
 				continue;
 			}
 			int y0i = std::max(0, int(std::ceil(y0f)));
-			int y1i = std::min(height - 1, int(std::floor(y1f)));
+			int y1i = std::min(height - 1, int(std::ceil(y1f)));
 
 			if (y0i == y1i){
 				continue;
 			}
+
+			assert(y0i < y1i);
 			Edgef edge(v0, v1, edgeIdOffset, faceIter + curFaceOffset);
+
 			edgeIdOffset++;
 			edge.setCurPos(y0i);
 			edgeTable.push_back(edge);
@@ -120,7 +129,7 @@ void ScanLineZBuffer::buildTable(const Model& model){
 }
 
 
-void ScanLineZBuffer::actScan(){
+void ScanLineZBuffer::actScan(const Model& model){
 	Timer timer;
 	timer.reset();
 	timer.start();
@@ -147,7 +156,7 @@ void ScanLineZBuffer::actScan(){
 					iter++;
 				}
 			}
-			assert(iter != activeEdgeTable.end());
+			assert(iter == activeEdgeTable.end());
 		}
 
 		assert(activeEdgeTable.size() % 2 == 0);
@@ -156,25 +165,28 @@ void ScanLineZBuffer::actScan(){
 		std::sort(activeEdgeTable.begin(), activeEdgeTable.end(), [](const Edgef& a, const Edgef& b){
 			return a.cur.x < b.cur.x;
 		});
+		bool isSorted = std::is_sorted(activeEdgeTable.begin(), activeEdgeTable.end(), [](const Edgef& a, const Edgef& b){
+			return a.cur.x < b.cur.x;
+		});		
 
 		for(size_t i = 0; i < activeEdgeTable.size(); i++){
-			Edgef edge0 = activeEdgeTable[i];
+			Edgef &edge0 = activeEdgeTable[i];
+			// std::cout << "edge0.cur.x:" << edge0.cur.x << std::endl;
 			if(edge0.isPaired){
 				continue;
 			}
 			edge0.isPaired = true;
 			size_t pairId; 
 			for(pairId = i + 1; pairId < activeEdgeTable.size(); pairId++){
-				Edgef edge1 = activeEdgeTable[pairId];
+				Edgef &edge1 = activeEdgeTable[pairId];
 				if(edge0.polygonId == edge1.polygonId){
+					edge1.isPaired = true;
 					break; 
 				}
 			}
-			if(pairId == activeEdgeTable.size()){
-				std::cerr << "Error: pairId not found." << std::endl;
-				continue;
-			}
-			Edgef edge1 = activeEdgeTable[pairId];
+			
+			Edgef &edge1 = activeEdgeTable[pairId];
+
 			assert(edge0.cur.x <= edge1.cur.x);
 
 			uint x0 = std::max(0, int(std::ceil(edge0.cur.x)));
@@ -218,10 +230,11 @@ void ScanLineZBuffer::actScan(){
 				zStart += gradientDzDx;
 				rgbStart += gradientdRGBdx;
 			}
-			for(auto& edge : activeEdgeTable){
-				edge.setCurPos(h_iter + 1);
-				edge.isPaired = false;
-			}
+			
+		}
+		for(auto& edge : activeEdgeTable){
+			edge.setCurPos(h_iter + 1);
+			edge.isPaired = false;
 		}
 	}
 

@@ -6,6 +6,11 @@ struct Vertex {
     Vec3f position;
     Vec3f normal;
     Vec2f texcoord;
+    void dump(){
+        std::cout << "position: " << position << std::endl;
+        std::cout << "normal: " << normal << std::endl;
+        std::cout << "texcoord: " << texcoord << std::endl;
+    }
 };
 
 struct Color {

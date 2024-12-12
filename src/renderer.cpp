@@ -2,15 +2,17 @@
 #include "renderer.h"
 #include <algorithm>
 #include <cmath>
+#include <memory>
+
 
 // Constructor
 Renderer::Renderer(int w, int h, const Shader& shd, const Camera& cam)
     : width(w), height(h), shader(shd), camera(cam) {
         if(zBufferMethod == ZBufferMethod::Simple){
-            framebuffer = new SimpleZbuffer(w, h);
+            framebuffer = std::make_unique<SimpleZbuffer>(w, h);
         }
         else if (zBufferMethod == ZBufferMethod::ScanLine){
-            framebuffer = new ScanLineZBuffer(w, h);
+            framebuffer = std::make_unique<ScanLineZBuffer>(w, h);
             framebuffer->pRenderer = this;
         }
     }
@@ -62,6 +64,12 @@ void Renderer::render(const Model& model) {
             drawTriangle(vertices);
             // drawTriangleWithNormal(vertices, normal); 
         }
+    }
+    else if (this->zBufferMethod == ZBufferMethod::ScanLine){
+        ScanLineZBuffer* scanFB = dynamic_cast<ScanLineZBuffer*>(framebuffer.get());
+        scanFB->clear();
+        scanFB->buildTable(model);
+        scanFB->actScan(model);
     }
     
 }

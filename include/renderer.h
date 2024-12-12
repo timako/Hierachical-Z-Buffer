@@ -7,12 +7,13 @@
 #include "framebuffer.h"
 #include "ScanLineZBuffer.h"
 #include "vector"
+#include "memory"
 
 class Renderer {
 public:
     int width;
     int height;
-    Framebuffer *framebuffer;
+    std::unique_ptr<Framebuffer> framebuffer;
     Shader shader;
     Camera camera;
     enum ZBufferMethod {
@@ -21,7 +22,7 @@ public:
         SimpleHierarchical,
         OctreeHierarchical
     };
-    ZBufferMethod zBufferMethod = ZBufferMethod::Simple; 
+    ZBufferMethod zBufferMethod = ZBufferMethod::ScanLine; 
 
     Renderer(int w, int h, const Shader& shd, const Camera& cam);
 
